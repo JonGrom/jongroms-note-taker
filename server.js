@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const notes = require('./db/db.json');
 const { title } = require('process');
+const fs = require('fs')
+const uuid = require('./helpers/uuid');
 // const api = require('./routes/index.js');
 
 const PORT = process.env.port || 3001;
@@ -36,12 +38,12 @@ app.get('/api/notes', (req, res) => {
 
 //POST new note
 app.post('/api/notes', (req, res) =>{
-    console.log('what', req.body)
     const { title, text } = req.body
     if (title && text){
         const newNote = {
             title,
             text,
+            note_id: uuid(),
         }
 
         const response = {
@@ -49,6 +51,9 @@ app.post('/api/notes', (req, res) =>{
             body: newNote
         }
         notes.push(newNote)
+        fs.writeFile('./db/db.json', JSON.stringify(notes), (err) => {
+            err ? console.log(err) : console.log('notes saved')
+        })
         res.status(201).json(response);
     } else {
         res.status(500).json('Could not post new note')
